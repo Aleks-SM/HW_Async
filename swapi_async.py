@@ -14,10 +14,10 @@ async def get_person(client, person_id):
     return json_result
 
 
-async def get_homeworld(client, url):
+async def get_data(client, url, key):
     http_response = await client.get(url)
     json_result = await http_response.json()
-    result = json_result.get('name')
+    result = json_result.get(key)
     return result
 
 
@@ -38,18 +38,33 @@ async def main():
         for i in range(len(result)):
             name_person = result[i].get('name')
 
-            url_homeworld = result[i].get('homeworld')
-            cor = get_homeworld(client, url_homeworld)
-            homeworld = await asyncio.gather(cor)
+            films = []
+            if 'films' in result[i]:
+                url_films = result[i].get('films')
+                for j in url_films:
+                    cor = get_data(client, j, 'title')
+                    res = await asyncio.gather(cor)
+                    films.append(*res)
 
-            url_species = result[i].get('species')[0]
-            cor1 = get_homeworld(client, url_species)
-            species = await asyncio.gather(cor1)
+            species = []
+            if 'species' in result[i]:
+                url_species = result[i].get('species')
+                for j in url_species:
+                    cor = get_data(client, j, 'name')
+                    res = await asyncio.gather(cor)
+                    species.append(*res)
 
+            homeworld = []
+            if 'homeworld' in result[i]:
+                # url_homeworld = result[i].get('homeworld')
+                cor = get_data(client, result[i].get('homeworld'), 'name')
+                res = await asyncio.gather(cor)
+                homeworld.append(*res)
 
-            print('name_person', name_person)
-            print('homeworld', homeworld)
-            print('species', species)
+            print('name_person: ', name_person)
+            print('homeworld: ', *homeworld)
+            print('films: ', ', '.join(films))
+            print('species: ', ', '.join(species))
 
     tasks_set = asyncio.all_tasks() - {asyncio.current_task()}
     await asyncio.gather(*tasks_set)
