@@ -14,11 +14,15 @@ async def get_person(client, person_id):
     return json_result
 
 
-async def get_data(client, url, key):
-    http_response = await client.get(url)
-    json_result = await http_response.json()
-    result = json_result.get(key)
-    return result
+async def get_data(client, url_list, key):
+    list_data = []
+    if type(url_list) is str:
+        url_list = [url_list]
+    for url in url_list:
+        http_response = await client.get(url)
+        json_result = await http_response.json()
+        list_data.append(json_result.get(key))
+    return list_data
 
 
 async def insert_to_db(list_of_json):
@@ -38,33 +42,23 @@ async def main():
         for i in range(len(result)):
             name_person = result[i].get('name')
 
-            films = []
+            if 'vehicles' in result[i]:
+                vehicles = await get_data(client, result[i].get('vehicles'), 'name')
+            if 'starships' in result[i]:
+                starships = await get_data(client, result[i].get('starships'), 'name')
             if 'films' in result[i]:
-                url_films = result[i].get('films')
-                for j in url_films:
-                    cor = get_data(client, j, 'title')
-                    res = await asyncio.gather(cor)
-                    films.append(*res)
-
-            species = []
+                films = await get_data(client, result[i].get('films'), 'title')
             if 'species' in result[i]:
-                url_species = result[i].get('species')
-                for j in url_species:
-                    cor = get_data(client, j, 'name')
-                    res = await asyncio.gather(cor)
-                    species.append(*res)
-
-            homeworld = []
+                species = await get_data(client, result[i].get('species'), 'name')
             if 'homeworld' in result[i]:
-                # url_homeworld = result[i].get('homeworld')
-                cor = get_data(client, result[i].get('homeworld'), 'name')
-                res = await asyncio.gather(cor)
-                homeworld.append(*res)
+                homeworld = await get_data(client, result[i].get('homeworld'), 'name')
 
             print('name_person: ', name_person)
             print('homeworld: ', *homeworld)
             print('films: ', ', '.join(films))
             print('species: ', ', '.join(species))
+            print('starships ', ', '.join(starships))
+            print('vehicles : ', ', '.join(vehicles))
 
     tasks_set = asyncio.all_tasks() - {asyncio.current_task()}
     await asyncio.gather(*tasks_set)
