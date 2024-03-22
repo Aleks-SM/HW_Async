@@ -58,7 +58,7 @@ async def main():
                 result[i]['homeworld'] = await get_data(client, result[i].get('homeworld'), 'name')
 
             print(result[i])
-            asyncio.create_task(insert_to_db(result[i]))
+        asyncio.create_task(insert_to_db(result))
 
     tasks_set = asyncio.all_tasks() - {asyncio.current_task()}
     await asyncio.gather(*tasks_set)
