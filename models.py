@@ -28,7 +28,7 @@ class SwapiPeople(Base):
     skin_color: Mapped[str] = mapped_column(String(20))
     height: Mapped[str] = mapped_column(String(50))
     mass: Mapped[str] = mapped_column(String(10))
-    homeword: Mapped[str] = mapped_column(String(30))
+    homeworld: Mapped[str] = mapped_column(String(30))
     films: Mapped[str] = mapped_column(String(150))
     species: Mapped[str] = mapped_column(String(150))
     starships: Mapped[str] = mapped_column(String(150))
