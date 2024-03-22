@@ -40,8 +40,9 @@ async def main():
         result = await asyncio.gather(*coros)
         # asyncio.create_task(insert_to_db(result))
         for i in range(len(result)):
-            name_person = result[i].get('name')
-
+            result[i].pop('edited', 'Key not found')
+            result[i].pop('created', 'Key not found')
+            result[i].pop('url', 'Key not found')
             if 'vehicles' in result[i]:
                 vehicles = await get_data(client, result[i].get('vehicles'), 'name')
             if 'starships' in result[i]:
@@ -53,12 +54,13 @@ async def main():
             if 'homeworld' in result[i]:
                 homeworld = await get_data(client, result[i].get('homeworld'), 'name')
 
-            print('name_person: ', name_person)
+            print('name_person: ', person_name)
             print('homeworld: ', *homeworld)
             print('films: ', ', '.join(films))
             print('species: ', ', '.join(species))
             print('starships ', ', '.join(starships))
             print('vehicles : ', ', '.join(vehicles))
+            asyncio.create_task(insert_to_db(result))
 
     tasks_set = asyncio.all_tasks() - {asyncio.current_task()}
     await asyncio.gather(*tasks_set)
