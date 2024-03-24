@@ -21,7 +21,7 @@ class SwapiPeople(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), unique=True, index=True)
-    gender: Mapped[str] = mapped_column(String(10))
+    gender: Mapped[str] = mapped_column(String(20))
     birth_year: Mapped[str] = mapped_column(String(10))
     eye_color: Mapped[str] = mapped_column(String(20))
     hair_color: Mapped[str] = mapped_column(String(20))
