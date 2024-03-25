@@ -11,7 +11,7 @@ MAX_CHUNK = 10
 async def get_person(client, person_id):
     http_response = await client.get(f"https://swapi.py4e.com/api/people/{person_id}")
     if http_response.status == 404:
-        return
+        return None
     else:
         # print(http_response.status)
         json_result = await http_response.json()
@@ -41,11 +41,11 @@ async def main():
     await init_db()
     client = aiohttp.ClientSession()
     for chunk in chunked(range(1, 100), MAX_CHUNK):
-        coros = [get_person(client, person_id) for person_id in chunk]
+        coros = [get_person(client, person_id) for person_id in chunk if not None]
         result = await asyncio.gather(*coros)
         # asyncio.create_task(insert_to_db(result))
-        if None in result:
-            result.remove(None)
+        # if None in result:
+        #   result.remove(None)
         for i in range(len(result)):
             try:
                 result[i].pop('edited', 'Key not found')
