@@ -10,7 +10,9 @@ MAX_CHUNK = 10
 
 async def get_person(client, person_id):
     http_response = await client.get(f"https://swapi.py4e.com/api/people/{person_id}")
-    if http_response.status == 200:
+    if http_response.status == 404:
+        return None
+    else:
         # print(http_response.status)
         result = await http_response.json()
         result.pop('edited', None)
@@ -55,10 +57,11 @@ async def main():
     await init_db()
     client = aiohttp.ClientSession()
     for chunk in chunked(range(1, 100), MAX_CHUNK):
-        coros = [get_person(client, person_id) for person_id in chunk]
+        coros = [get_person(client, person_id) for person_id in chunk if not None]
         result = await asyncio.gather(*coros)
         # asyncio.create_task(insert_to_db(result))
         # if None in result:
+
         #     result.remove(None)
         # for i in range(len(result)):
         #     result[i].pop('edited', None)
@@ -79,6 +82,31 @@ async def main():
         #         result[i]['homeworld'] = await get_data(client, result[i].get('homeworld'), 'name')
         #
         #     print('i = ', i, result[i])
+=======
+        #   result.remove(None)
+        for i in range(len(result)):
+            try:
+                result[i].pop('edited', 'Key not found')
+                result[i].pop('created', 'Key not found')
+                result[i].pop('url', 'Key not found')
+                # del result[i]['url']
+
+                person_name = result[i].get('name')
+                if 'vehicles' in result[i]:
+                    result[i]['vehicles'] = await get_data(client, result[i].get('vehicles'), 'name')
+                if 'starships' in result[i]:
+                    result[i]['starships'] = await get_data(client, result[i].get('starships'), 'name')
+                if 'films' in result[i]:
+                    result[i]['films'] = await get_data(client, result[i].get('films'), 'title')
+                if 'species' in result[i]:
+                    result[i]['species'] = await get_data(client, result[i].get('species'), 'name')
+                if 'homeworld' in result[i]:
+                    result[i]['homeworld'] = await get_data(client, result[i].get('homeworld'), 'name')
+            except Exception:
+                pass
+
+            print('i = ', i, result[i])
+
         asyncio.create_task(insert_to_db(result))
 
         tasks_set = asyncio.all_tasks() - {asyncio.current_task()}
